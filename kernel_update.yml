@@ -1,0 +1,31 @@
+---
+- name: Kernel Update
+  hosts: Lesson2
+  gather_facts: True
+  become: true
+  become_user: root
+  become_method: sudo
+  # check_mode: yes
+  tasks:
+  - name: Show current cernel version
+    debug:
+      msg: '{{ ansible_kernel }}'
+  
+  - name: Update Kernel
+    ansible.builtin.apt:
+      name: linux-image-6.1.0-25-amd64
+      update_cache: yes
+    diff: true
+    register: install_kernel
+
+  - name: Update grub
+    ansible.builtin.apt:
+      name: grub
+      update_cache: yes
+    diff: true
+    register: update_GRUB
+
+  - name: Reboot VM
+    ansible.builtin.reboot:
+      reboot_timeout: 60
+    when: install_kernel.changed and update_GRUB.changed
